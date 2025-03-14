@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 export interface Movie {
   id: number;
@@ -24,7 +24,13 @@ export class MoviesService {
   }
 
   findMovie(id: number) {
-    return this.movies.find((movie) => movie.id === id);
+    const movie = this.movies.find((movie) => movie.id === id);
+
+    if (!movie) {
+      throw new NotFoundException(`찾는 영화가 없습니다. ${id}`);
+    }
+
+    return movie;
   }
 
   createMovie(createMovieDto: any) {
@@ -39,15 +45,22 @@ export class MoviesService {
   }
 
   updateMovie(id: number, updateMovieDto: any) {
-    // const newMovie: Movie = {
-    //   id: this.movieCount++,
-    //   title: updateMovieDto.title,
-    // };
-    // this.movies.push(newMovie);
-    // return newMovie;
+    const movie = this.findMovie(id);
+
+    Object.assign(movie, updateMovieDto);
+
+    return movie;
   }
 
   deleteMovie(id: number) {
-    return `This action removes a #${id} movie`;
+    const movieIndex = this.movies.findIndex((movie) => movie.id === id);
+
+    if (movieIndex === -1) {
+      throw new NotFoundException(`찾는 영화가 없습니다. ${id}`);
+    }
+
+    this.movies.splice(movieIndex, 1);
+
+    return id;
   }
 }
