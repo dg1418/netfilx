@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 
@@ -14,11 +15,11 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  getMovies() {
-    return this.moviesService.findManyMovies();
+  getMovies(@Query('title') title?: string) {
+    return this.moviesService.findManyMovies(title);
   }
 
-  @Get()
+  @Get(':id')
   getMovie(@Param('id') id: string) {
     return this.moviesService.findMovie(+id);
   }

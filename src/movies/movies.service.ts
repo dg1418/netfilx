@@ -19,8 +19,12 @@ export class MoviesService {
     },
   ];
 
-  findManyMovies() {
-    return this.movies;
+  findManyMovies(title: string) {
+    if (!title) {
+      return this.movies;
+    }
+
+    return this.movies.filter((movie) => movie.title.startsWith(title));
   }
 
   findMovie(id: number) {
