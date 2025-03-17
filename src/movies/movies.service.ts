@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateMovieDto } from './dtos/create-movie.dto';
+import { UpdateMovieDto } from './dtos/update-movie.dto';
 
 export interface Movie {
   id: number;
   title: string;
+  genre: string;
 }
 
 @Injectable()
@@ -12,10 +15,12 @@ export class MoviesService {
     {
       id: 1,
       title: '햄릿',
+      genre: '판타지',
     },
     {
       id: 2,
       title: '아이언맨',
+      genre: '액션',
     },
   ];
 
@@ -37,10 +42,10 @@ export class MoviesService {
     return movie;
   }
 
-  createMovie(createMovieDto: any) {
+  createMovie(createMovieDto: CreateMovieDto) {
     const newMovie: Movie = {
-      id: this.movieCount++,
-      title: createMovieDto.title,
+      id: ++this.movieCount,
+      ...createMovieDto,
     };
 
     this.movies.push(newMovie);
@@ -48,7 +53,7 @@ export class MoviesService {
     return newMovie;
   }
 
-  updateMovie(id: number, updateMovieDto: any) {
+  updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
     const movie = this.findMovie(id);
 
     Object.assign(movie, updateMovieDto);
