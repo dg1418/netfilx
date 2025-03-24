@@ -1,12 +1,12 @@
 import {
   IsNotEmpty,
   IsOptional,
-  registerDecorator,
-  Validate,
-  ValidationArguments,
-  ValidationOptions,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
+  // registerDecorator,
+  // Validate,
+  // ValidationArguments,
+  // ValidationOptions,
+  // ValidatorConstraint,
+  // ValidatorConstraintInterface,
 } from 'class-validator';
 
 // 6강 커스텀 발리데이터 만들기
@@ -17,34 +17,34 @@ import {
 // 사용할 수 있다.
 // 9. 추가로 @ValidatorConstraint()에 { async: true } 같은 비동기실행 옵션을 넣을수 있음 이걸로, 네트워크
 // 요청 등을 추가 할 수 있을듯
-@ValidatorConstraint()
-class PasswordValidator implements ValidatorConstraintInterface {
-  validate(
-    value: any,
-    validationArguments?: ValidationArguments,
-  ): Promise<boolean> | boolean {
-    return value.length > 4 && value.length < 8;
-  }
-  defaultMessage?(validationArguments?: ValidationArguments): string {
-    return '비밀번호의 길이는 4~8자 이어야함';
-  }
-}
+// @ValidatorConstraint()
+// class PasswordValidator implements ValidatorConstraintInterface {
+//   validate(
+//     value: any,
+//     validationArguments?: ValidationArguments,
+//   ): Promise<boolean> | boolean {
+//     return value.length > 4 && value.length < 8;
+//   }
+//   defaultMessage?(validationArguments?: ValidationArguments): string {
+//     return '비밀번호의 길이는 4~8자 이어야함';
+//   }
+// }
 
 // 4. 내 커스텀 발리데이터 데코레이터 만들기
 // 5. 함수하나 만들고 ValidationOptions 인터페이스 타입의 변수를 받아야함
 // 6. 리턴으로 함수를 하나리턴하는데, 그함수에서는 registerDecorator() 함수를 실행후 리턴해야함
 // 7. registerDecorator 함수에 객체로 아래와 같은 옵션들이 들어가야함
 // 8. 이제 @IsPasswordValid() 이라는 발리데이션 데코레이터를 사용할 수 있음
-function IsPasswordValid(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
-    return registerDecorator({
-      target: object.constructor,
-      propertyName,
-      options: validationOptions,
-      validator: PasswordValidator,
-    });
-  };
-}
+// function IsPasswordValid(validationOptions?: ValidationOptions) {
+//   return function (object: Object, propertyName: string) {
+//     return registerDecorator({
+//       target: object.constructor,
+//       propertyName,
+//       options: validationOptions,
+//       validator: PasswordValidator,
+//     });
+//   };
+// }
 
 export class UpdateMovieDto {
   @IsNotEmpty() // 값이 비어있을 수 없다.
@@ -82,6 +82,6 @@ export class UpdateMovieDto {
   // @MinLength(1) // 문자열 길이 민
   // @IsUUID() // uuid 형태인지 확인
   // @Validate(PasswordValidator,{ message: '다른 메시지' }) // 커스텀 발리데이터 기본
-  @IsPasswordValid({ message: '다른 메시지' }) // 커스텀 데코까지 적용
-  test?: string;
+  // @IsPasswordValid({ message: '다른 메시지' }) // 커스텀 데코까지 적용
+  // test?: string;
 }
