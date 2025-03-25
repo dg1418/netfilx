@@ -27,7 +27,7 @@ export class MoviesController {
 
   @Get(':id')
   getMovie(@Param('id') id: string) {
-    return this.moviesService.findMovie(+id);
+    return this.moviesService.findMovieById(+id);
   }
 
   @Post()

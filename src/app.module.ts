@@ -3,6 +3,7 @@ import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
+import { Movie } from './movies/entity/movie.entity';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import * as Joi from 'joi';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [], // typeorm 리포클래스들을 넣어서 설정하나봄
+        entities: [Movie], // typeorm 리포클래스들을 넣어서 설정하나봄
         synchronize: true, // entity를 보고 테이블을 구성하잖아? entitiy 변경되면 자동 마이그레인션 하는 옵션 ㄷㄷ
         // 개발환경에서만 true로 하고 실제 환경에서는 false로 하기
       }),

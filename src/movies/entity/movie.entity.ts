@@ -1,14 +1,32 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm';
 // 6강 클래스 transformer
+// 8강 데이터베이스 typeorm
+
+@Entity()
 export class Movie {
+  @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
   title: string;
 
-  //@Expose() // 노출하겠다. 디폴트인데 왜하나?
-  // -> 클래스 자체에 @Exclude()로 노출을 없애고, 특정 값만 보여주고 싶을때
-  // @Exclude() //직렬화, 역직렬화 할때, 이값을 노출하지 않겠다.
-
-  @Transform(({ value }) => value.toString().toUpperCase())
+  @Column()
   genre: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @VersionColumn()
+  varsion: number;
 }
