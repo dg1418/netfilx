@@ -7,20 +7,8 @@ import {
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
-// 6강 클래스 transformer
-// 8강 데이터베이스 typeorm
 
-@Entity()
-export class Movie {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  title: string;
-
-  @Column()
-  genre: string;
-
+export class BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
@@ -29,4 +17,16 @@ export class Movie {
 
   @VersionColumn()
   varsion: number;
+}
+
+@Entity()
+export class Movie extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column()
+  genre: string;
 }
