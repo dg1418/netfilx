@@ -4,12 +4,15 @@ import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import { MovieDetail } from './entity/movie-detail.entity';
 
 @Injectable()
 export class MoviesService {
   constructor(
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>,
+    @InjectRepository(MovieDetail)
+    private readonly movieDetailRepository: Repository<MovieDetail>,
   ) {}
 
   async findManyMovies(title: string) {
@@ -26,6 +29,7 @@ export class MoviesService {
   async findMovieById(id: number) {
     const movie = await this.movieRepository.findOne({
       where: { id },
+      relations: ['detail'],
     });
 
     if (!movie) {
@@ -36,21 +40,39 @@ export class MoviesService {
   }
 
   async createMovie(createMovieDto: CreateMovieDto) {
-    return this.movieRepository.save(createMovieDto);
+    const newMovieDetail = await this.movieDetailRepository.save({
+      detail: createMovieDto.detail,
+    });
+
+    return this.movieRepository.save({
+      title: createMovieDto.title,
+      genre: createMovieDto.genre,
+      detail: newMovieDetail,
+    });
   }
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
-    await this.findMovieById(id);
+    const { detail, ...movieRest } = updateMovieDto;
 
-    await this.movieRepository.update({ id }, updateMovieDto);
+    const movie = await this.findMovieById(id);
+
+    await this.movieRepository.update({ id }, movieRest);
+
+    if (detail) {
+      await this.movieDetailRepository.update(
+        { id: movie.detail.id },
+        { detail },
+      );
+    }
 
     return this.findMovieById(id);
   }
 
   async deleteMovie(id: number) {
-    await this.findMovieById(id);
+    const movie = await this.findMovieById(id);
 
-    await this.movieRepository.delete(id);
+    await this.movieRepository.delete(movie.id);
+    await this.movieRepository.delete(movie.detail.id);
 
     return id;
   }
