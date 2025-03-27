@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateMovieDto {
   @IsNotEmpty() //비어있을 수 없다.
@@ -12,4 +12,8 @@ export class CreateMovieDto {
   @IsNotEmpty()
   @IsString()
   detail: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  directorId: number;
 }

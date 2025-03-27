@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateMovieDto {
-  @IsNotEmpty() // 값이 비어있을 수 없다.
+  @IsNotEmpty()
   @IsString()
-  @IsOptional() // title 속성은 있을 수 도 있고 없을 수도 있다. => title이 없을 수 있지만 있다면, 비어있을 수 없음
+  @IsOptional()
   title?: string;
 
   @IsNotEmpty()
@@ -15,4 +15,9 @@ export class UpdateMovieDto {
   @IsString()
   @IsOptional()
   detail?: string;
+
+  @IsNotEmpty()
+  @IsInt()
+  @IsOptional()
+  directorId?: number;
 }
