@@ -103,7 +103,7 @@ export class MoviesService {
     const movie = await this.findMovieById(id);
 
     await this.movieRepository.delete(movie.id);
-    await this.movieRepository.delete(movie.detail.id);
+    await this.movieDetailRepository.delete(movie.detail.id);
 
     return id;
   }

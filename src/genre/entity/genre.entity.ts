@@ -7,7 +7,9 @@ export class Genre extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   name: string;
 
   @ManyToMany(() => Movie, (movie) => movie.genres)
