@@ -1,4 +1,11 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateMovieDto {
   @IsNotEmpty()
@@ -8,13 +15,14 @@ export class UpdateMovieDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsOptional()
-  genre?: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
   detail?: string;
+
+  @IsArray() //배열임
+  @ArrayNotEmpty() //비어있자 않은 배열이다.
+  @IsInt({ each: true })
+  //@IsNumber({}, { each: true })
+  @IsOptional()
+  genreIds?: number[];
 
   @IsNotEmpty()
   @IsInt()

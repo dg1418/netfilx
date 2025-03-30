@@ -3,9 +3,10 @@ import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entities/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
 
 @Injectable()
 export class MoviesService {
@@ -16,6 +17,8 @@ export class MoviesService {
     private readonly movieDetailRepository: Repository<MovieDetail>,
     @InjectRepository(Director)
     private readonly directorRepository: Repository<Director>,
+    @InjectRepository(Genre)
+    private readonly genreRepository: Repository<Genre>,
   ) {}
 
   async findManyMovies(title: string) {
@@ -35,7 +38,7 @@ export class MoviesService {
   async findMovieById(id: number) {
     const movie = await this.movieRepository.findOne({
       where: { id },
-      relations: ['detail', 'director'],
+      relations: ['detail', 'director', 'genres'],
     });
 
     if (!movie) {
@@ -57,17 +60,33 @@ export class MoviesService {
     return director;
   }
 
+  async findGenresByIds(ids: number[]) {
+    const genres = await this.genreRepository.find({
+      //여러개를 찾으니까 find
+      where: { id: In(ids) }, // id 검색을 할때, 한꺼번에 찾기 in()
+    });
+
+    if (genres.length !== ids.length) {
+      throw new NotFoundException(
+        `존재하지 않는 장르가 있습니다. 존재하는 ids: ${genres.map((genre) => genre.id).join(',')}`,
+      ); //신기
+    }
+
+    return genres;
+  }
+
   async createMovie(createMovieDto: CreateMovieDto) {
-    const { directorId } = createMovieDto;
+    const { directorId, genreIds } = createMovieDto;
     const director = await this.findDirectorById(directorId);
+    const genres = await this.findGenresByIds(genreIds);
 
     return this.movieRepository.save({
       title: createMovieDto.title,
-      genre: createMovieDto.genre,
       detail: {
         detail: createMovieDto.detail,
       },
       director,
+      genres,
     });
   }
 

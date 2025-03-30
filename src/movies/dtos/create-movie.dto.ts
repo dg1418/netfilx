@@ -1,17 +1,26 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateMovieDto {
-  @IsNotEmpty() //비어있을 수 없다.
+  @IsNotEmpty()
   @IsString()
   title: string;
 
   @IsNotEmpty()
   @IsString()
-  genre: string;
-
-  @IsNotEmpty()
-  @IsString()
   detail: string;
+
+  @IsArray() //배열임
+  @ArrayNotEmpty() //비어있자 않은 배열이다.
+  @IsInt({ each: true })
+  //@IsNumber({}, { each: true })
+  genreIds: number[];
 
   @IsNotEmpty()
   @IsInt()
