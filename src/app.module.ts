@@ -6,7 +6,7 @@ import * as Joi from 'joi';
 import { Movie } from './movies/entity/movie.entity';
 import { MovieDetail } from './movies/entity/movie-detail.entity';
 import { DirectorModule } from './director/director.module';
-import { Director } from './director/entities/director.entity';
+import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
 import { Genre } from './genre/entity/genre.entity';
 

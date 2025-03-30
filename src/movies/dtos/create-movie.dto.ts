@@ -4,6 +4,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsPositive,
   IsString,
 } from 'class-validator';
 
@@ -19,10 +20,11 @@ export class CreateMovieDto {
   @IsArray() //배열임
   @ArrayNotEmpty() //비어있자 않은 배열이다.
   @IsInt({ each: true })
-  //@IsNumber({}, { each: true })
+  @IsPositive({ each: true })
   genreIds: number[];
 
   @IsNotEmpty()
   @IsInt()
+  @IsPositive()
   directorId: number;
 }

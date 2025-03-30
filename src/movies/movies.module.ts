@@ -4,7 +4,7 @@ import { MoviesController } from './movies.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
-import { Director } from 'src/director/entities/director.entity';
+import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
 
 @Module({

@@ -5,7 +5,7 @@ import { Movie } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
-import { Director } from 'src/director/entities/director.entity';
+import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
 
 @Injectable()
@@ -24,14 +24,14 @@ export class MoviesService {
   async findManyMovies(title: string) {
     if (!title) {
       return this.movieRepository.findAndCount({
-        relations: ['director'],
+        relations: ['director', 'genres'],
       });
     }
     return this.movieRepository.findAndCount({
       where: {
         title: Like(`%${title}%`),
       },
-      relations: ['director'],
+      relations: ['director', 'genres'],
     });
   }
 
@@ -69,7 +69,7 @@ export class MoviesService {
     if (genres.length !== ids.length) {
       throw new NotFoundException(
         `존재하지 않는 장르가 있습니다. 존재하는 ids: ${genres.map((genre) => genre.id).join(',')}`,
-      ); //신기
+      ); //신기방기 새로움
     }
 
     return genres;
@@ -91,9 +91,15 @@ export class MoviesService {
   }
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
-    const { detail, directorId, ...movieRest } = updateMovieDto;
+    const { detail, directorId, genreIds, ...movieRest } = updateMovieDto;
     const movie = await this.findMovieById(id);
     let updateDirector: Director | null = null;
+    let updateGenres: Genre[] | null = null;
+
+    if (genreIds) {
+      const genres = await this.findGenresByIds(genreIds);
+      updateGenres = genres;
+    }
 
     if (detail) {
       await this.movieDetailRepository.update(
@@ -112,10 +118,22 @@ export class MoviesService {
       {
         ...movieRest,
         ...(updateDirector && { director: updateDirector }),
+        //...(updateGenres && { genres: updateGenres }),
+        // 주석처리된 코드는 작동하지 않음. 에러
+        // 1. 의도. movie가 가지고 있는 genre 배열을 업데이트.
+        // 2. 에러. many to many는 가운데 테이블 끼고 저장하잖아? 근데 update 메서드가 이걸 못해줌
+        // 3. 결과적으로 위 주석은 에러가남.
+        // 4. 해결 법은 업데이트 후 따로 genre를 바꿔주고. save해줘야함.
       },
     );
 
-    return this.findMovieById(id);
+    // genres 업데이트를 위한 save 로직
+    const newMovie = await this.findMovieById(id);
+    newMovie.genres = updateGenres;
+
+    await this.movieRepository.save(newMovie);
+
+    return newMovie;
   }
 
   async deleteMovie(id: number) {

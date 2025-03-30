@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateDirectorDto } from './dto/create-director.dto';
 import { UpdateDirectorDto } from './dto/update-director.dto';
 import { Repository } from 'typeorm';
-import { Director } from './entities/director.entity';
+import { Director } from './entity/director.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
