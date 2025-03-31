@@ -186,81 +186,111 @@ export class MoviesService {
   }
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
-    const { detail, directorId, genreIds, ...movieRest } = updateMovieDto;
-    let updateDirector: Director | null = null;
-    let updateGenres: Genre[] | null = null;
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect(); // 2. 디비와 러너를 연결하기
+    await qr.startTransaction();
 
-    const movie = await this.findMovieById(id);
+    try {
+      const { detail, directorId, genreIds, ...movieRest } = updateMovieDto;
+      let updateDirector: Director | null = null;
+      let updateGenres: Genre[] | null = null;
 
-    if (genreIds) {
-      const genres = await this.findGenresByIds(genreIds);
-      updateGenres = genres;
-    }
+      const movie = await this.findMovieById(id); // 변경해야함
 
-    if (detail) {
-      await this.movieDetailRepository
+      if (genreIds) {
+        const genres = await qr.manager.find(Genre, {
+          //여러개를 찾으니까 find
+          where: { id: In(genreIds) }, // id 검색을 할때, 한꺼번에 찾기 in()
+        });
+
+        if (genres.length !== genreIds.length) {
+          throw new NotFoundException(
+            `존재하지 않는 장르가 있습니다. 존재하는 ids: ${genres.map((genre) => genre.id).join(',')}`,
+          ); //신기방기 새로움
+        }
+
+        updateGenres = genres;
+      }
+
+      if (detail) {
+        await qr.manager
+          .createQueryBuilder()
+          .update(MovieDetail)
+          .set({ detail })
+          .where('id = :id', { id: movie.detail.id })
+          .execute();
+
+        // await this.movieDetailRepository.update(
+        //   { id: movie.detail.id },
+        //   { detail },
+        // );
+      }
+
+      if (directorId) {
+        const director = await qr.manager.findOne(Director, {
+          where: { id: directorId },
+        });
+
+        if (!director) {
+          throw new NotFoundException(`찾을 수 없는 감독입니다. ${directorId}`);
+        }
+
+        updateDirector = director;
+      }
+
+      const movieUpdateFields = {
+        ...movieRest,
+        ...(updateDirector && { director: updateDirector }),
+      };
+
+      await qr.manager
         .createQueryBuilder()
-        .update(MovieDetail)
-        .set({ detail })
-        .where('id = :id', { id: movie.detail.id })
+        .update(Movie)
+        .set(movieUpdateFields)
+        .where('id = :id', { id })
         .execute();
 
-      // await this.movieDetailRepository.update(
-      //   { id: movie.detail.id },
-      //   { detail },
+      // await this.movieRepository.update(
+      //   { id },
+      //   {
+      //     ...movieRest,
+      //     ...(updateDirector && { director: updateDirector }),
+      //     //...(updateGenres && { genres: updateGenres }),
+      //     // 주석처리된 코드는 작동하지 않음. 에러
+      //     // 1. 의도. movie가 가지고 있는 genre 배열을 업데이트.
+      //     // 2. 에러. many to many는 가운데 테이블 끼고 저장하잖아? 근데 update 메서드가 이걸 못해줌
+      //     // 3. 결과적으로 위 주석은 에러가남.
+      //     // 4. 해결 법은 업데이트 후 따로 genre를 바꿔주고. save해줘야함.
+      //   },
       // );
+
+      // genres 업데이트를 위한 save 로직
+
+      if (updateGenres) {
+        await qr.manager
+          .createQueryBuilder()
+          .relation(Movie, 'genres') // 관계있는 필드
+          .of(id)
+          .addAndRemove(
+            updateGenres.map((genre) => genre.id), //이건 새로운 장르 관계 추가를 위한 id 리스트
+            movie.genres.map((genre) => genre.id), //이건 기존 장르 관계 삭제를 위한 id 리스트
+          ); // 관계를 추가하거나 지우는 메서드. 1. 첫번째 파라미터는 추가할값, 두번쨰는 삭제할값
+        // 2. many to many 상황에서 기존 관계를 모두 지우고 새롭게 추가된 관계를 넣기위해서 이렇게 함.
+      }
+      // const newMovie = await this.findMovieById(id);
+      // newMovie.genres = updateGenres;
+
+      // await this.movieRepository.save(newMovie);
+
+      await qr.commitTransaction(); // 방금 이거 잊어버렸었음. 잘 기억하기
+
+      return await this.findMovieById(id);
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
     }
-
-    if (directorId) {
-      const director = await this.findDirectorById(directorId);
-      updateDirector = director;
-    }
-
-    const movieUpdateFields = {
-      ...movieRest,
-      ...(updateDirector && { director: updateDirector }),
-    };
-
-    await this.movieRepository
-      .createQueryBuilder()
-      .update(Movie)
-      .set(movieUpdateFields)
-      .where('id = :id', { id })
-      .execute();
-
-    // await this.movieRepository.update(
-    //   { id },
-    //   {
-    //     ...movieRest,
-    //     ...(updateDirector && { director: updateDirector }),
-    //     //...(updateGenres && { genres: updateGenres }),
-    //     // 주석처리된 코드는 작동하지 않음. 에러
-    //     // 1. 의도. movie가 가지고 있는 genre 배열을 업데이트.
-    //     // 2. 에러. many to many는 가운데 테이블 끼고 저장하잖아? 근데 update 메서드가 이걸 못해줌
-    //     // 3. 결과적으로 위 주석은 에러가남.
-    //     // 4. 해결 법은 업데이트 후 따로 genre를 바꿔주고. save해줘야함.
-    //   },
-    // );
-
-    // genres 업데이트를 위한 save 로직
-
-    if (updateGenres) {
-      await this.movieRepository
-        .createQueryBuilder()
-        .relation(Movie, 'genres') // 관계있는 필드
-        .of(id)
-        .addAndRemove(
-          updateGenres.map((genre) => genre.id), //이건 새로운 장르 관계 추가를 위한 id 리스트
-          movie.genres.map((genre) => genre.id), //이건 기존 장르 관계 삭제를 위한 id 리스트
-        ); // 관계를 추가하거나 지우는 메서드. 1. 첫번째 파라미터는 추가할값, 두번쨰는 삭제할값
-      // 2. many to many 상황에서 기존 관계를 모두 지우고 새롭게 추가된 관계를 넣기위해서 이렇게 함.
-    }
-    // const newMovie = await this.findMovieById(id);
-    // newMovie.genres = updateGenres;
-
-    // await this.movieRepository.save(newMovie);
-
-    return await this.findMovieById(id);
   }
 
   async deleteMovie(id: number) {
