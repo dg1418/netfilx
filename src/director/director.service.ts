@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDirectorDto } from './dto/create-director.dto';
 import { UpdateDirectorDto } from './dto/update-director.dto';
 import { Repository } from 'typeorm';
@@ -15,10 +15,16 @@ export class DirectorService {
     return this.directorRepository.findAndCount();
   }
 
-  async findOne(id: number) {
-    return this.directorRepository.findOne({
+  async findOneById(id: number) {
+    const director = await this.directorRepository.findOne({
       where: { id },
     });
+
+    if (!director) {
+      throw new NotFoundException(`찾을 수 없는 감독입니다. ${id}`);
+    }
+
+    return director;
   }
 
   async create(createDirectorDto: CreateDirectorDto) {
@@ -26,13 +32,13 @@ export class DirectorService {
   }
 
   async update(id: number, updateDirectorDto: UpdateDirectorDto) {
-    await this.findOne(id);
+    await this.findOneById(id);
     await this.directorRepository.update({ id }, updateDirectorDto);
-    return this.findOne(id);
+    return this.findOneById(id);
   }
 
   async remove(id: number) {
-    await this.findOne(id);
+    await this.findOneById(id);
     await this.directorRepository.delete(id);
 
     return id;
