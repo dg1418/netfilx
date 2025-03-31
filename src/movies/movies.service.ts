@@ -3,7 +3,7 @@ import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Like, Repository } from 'typeorm';
+import { DataSource, In, Like, Repository } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
@@ -19,6 +19,7 @@ export class MoviesService {
     private readonly directorRepository: Repository<Director>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
+    private readonly dataSource: DataSource, // tpyeorm의 트랜잭셕을 위한 객체
   ) {}
 
   async findManyMovies(title: string) {
@@ -95,56 +96,93 @@ export class MoviesService {
   }
 
   async createMovie(createMovieDto: CreateMovieDto) {
-    const { directorId, genreIds } = createMovieDto;
-    const director = await this.findDirectorById(directorId);
-    const genres = await this.findGenresByIds(genreIds);
+    // 8강 트랜젝션 시작.
+    // 1. 먼저 쿼리러너를 만든다.
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect(); // 2. 디비와 러너를 연결하기
+    await qr.startTransaction(); // 3. 스타트 트랜젝션, 아규먼트로 트랜젝션 레벨이 문자열로 들어감, 안넣으면 기본세팅
 
-    // 요기부터 쿼리빌더 실습
-    const movieDetail = await this.movieDetailRepository
-      .createQueryBuilder()
-      .insert()
-      .into(MovieDetail)
-      .values({
-        detail: createMovieDto.detail,
-      })
-      .execute(); //이걸로 실행
+    // 4. try catch 를 트랜젝션에서는 반드시 해야한다. finally까지 해줌
+    try {
+      // 8. 각각의 리포지토리로 디비를 실행하는게 아니라. 하나의 트랜젝션 객체로 실행해야함.
+      const { directorId, genreIds } = createMovieDto;
 
-    const movieDetailId = movieDetail.identifiers[0].id; //identifiers는 리스트임. 왜냐면 insert로 여러개를 추가했을 수도 있으니까
+      const director = await qr.manager.findOne(Director, {
+        where: { id: directorId },
+      });
 
-    const movie = await this.movieRepository
-      .createQueryBuilder()
-      .insert()
-      .into(Movie)
-      .values({
-        title: createMovieDto.title,
-        detail: {
-          id: movieDetailId, // id를 넣어주는걸 기억. 테이블과 똑같은거 같음
-        },
-        director, // genres 같은 many to many는 그냥 insert로 추가 안됨. 따로 해야험
-      })
-      .execute();
+      if (!director) {
+        throw new NotFoundException(`찾을 수 없는 감독입니다. ${directorId}`);
+      }
 
-    const moiveId = movie.identifiers[0].id;
+      const genres = await qr.manager.find(Genre, {
+        //여러개를 찾으니까 find
+        where: { id: In(genreIds) }, // id 검색을 할때, 한꺼번에 찾기 in()
+      });
 
-    await this.movieRepository
-      .createQueryBuilder()
-      .relation(Movie, 'genres')
-      .of(moiveId)
-      .add(genres.map((genre) => genre.id));
+      if (genres.length !== genreIds.length) {
+        throw new NotFoundException(
+          `존재하지 않는 장르가 있습니다. 존재하는 ids: ${genres.map((genre) => genre.id).join(',')}`,
+        ); //신기방기 새로움
+      }
 
-    return await this.findMovieById(moiveId);
+      // 요기부터 쿼리빌더 실습
+      const movieDetail = await qr.manager
+        .createQueryBuilder()
+        .insert()
+        .into(MovieDetail)
+        .values({
+          detail: createMovieDto.detail,
+        })
+        .execute(); //이걸로 실행
 
-    // 현재 repository에서는 cascade로 연관된 테이블의 정보를 movieRepo에서 생성할 수 있다.
-    // 그런데 쿼리 빌더에서는 이 기능을 제공하지 않는다.
-    // 결과적으로 쿼리 빌더를 사용할때, 여러 테이블에 row를 생성 할려면 각 repo마다 따로 생성해 줘야한다.
-    // return this.movieRepository.save({
-    //   title: createMovieDto.title,
-    //   detail: {
-    //     detail: createMovieDto.detail,
-    //   },
-    //   director,
-    //   genres,
-    // });
+      const movieDetailId = movieDetail.identifiers[0].id; //identifiers는 리스트임. 왜냐면 insert로 여러개를 추가했을 수도 있으니까
+
+      const movie = await qr.manager
+        .createQueryBuilder()
+        .insert()
+        .into(Movie)
+        .values({
+          title: createMovieDto.title,
+          detail: {
+            id: movieDetailId, // id를 넣어주는걸 기억. 테이블과 똑같은거 같음
+          },
+          director, // genres 같은 many to many는 그냥 insert로 추가 안됨. 따로 해야험
+        })
+        .execute();
+
+      const moiveId = movie.identifiers[0].id;
+
+      await qr.manager
+        .createQueryBuilder()
+        .relation(Movie, 'genres')
+        .of(moiveId)
+        .add(genres.map((genre) => genre.id));
+
+      // 현재 repository에서는 cascade로 연관된 테이블의 정보를 movieRepo에서 생성할 수 있다.
+      // 그런데 쿼리 빌더에서는 이 기능을 제공하지 않는다.
+      // 결과적으로 쿼리 빌더를 사용할때, 여러 테이블에 row를 생성 할려면 각 repo마다 따로 생성해 줘야한다.
+      // return this.movieRepository.save({
+      //   title: createMovieDto.title,
+      //   detail: {
+      //     detail: createMovieDto.detail,
+      //   },
+      //   director,
+      //   genres,
+      // });
+
+      // 5. 잘 작동이 끝나면 커밋을 해야겠지?
+      await qr.commitTransaction();
+
+      return await this.findMovieById(moiveId);
+    } catch (e) {
+      // 6. 만일 에러가 일어난다면, 롤백을 해줘야함.
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      // 7. 커밋을 했든 에러가 났든 코드가 끝나면 반드시 트랜젝션을 디비에 되돌려줘야함. 아니면 계속 연결중인듯함
+      await qr.release();
+    }
   }
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
