@@ -9,6 +9,8 @@ import {
   Query,
   UseInterceptors,
   ClassSerializerInterceptor,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dtos/create-movie.dto';
@@ -26,7 +28,10 @@ export class MoviesController {
   }
 
   @Get(':id')
-  getMovie(@Param('id') id: string) {
+  getMovie(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
     return this.moviesService.findMovieById(+id);
   }
 
@@ -36,12 +41,15 @@ export class MoviesController {
   }
 
   @Patch(':id')
-  patchMovie(@Param('id') id: string, @Body() body: UpdateMovieDto) {
+  patchMovie(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateMovieDto,
+  ) {
     return this.moviesService.updateMovie(+id, body);
   }
 
   @Delete(':id')
-  deleteMovie(@Param('id') id: string) {
+  deleteMovie(@Param('id', ParseIntPipe) id: number) {
     return this.moviesService.deleteMovie(+id);
   }
 }
