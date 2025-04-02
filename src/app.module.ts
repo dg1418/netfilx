@@ -9,6 +9,9 @@ import { DirectorModule } from './director/director.module';
 import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
 import { Genre } from './genre/entity/genre.entity';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './user/entity/user.entity';
 
 @Module({
   imports: [
@@ -33,18 +36,17 @@ import { Genre } from './genre/entity/genre.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Movie, MovieDetail, Director, Genre], // typeorm 리포클래스들을 넣어서 설정하나봄
+        entities: [Movie, MovieDetail, Director, Genre, User], // typeorm 리포클래스들을 넣어서 설정하나봄
         synchronize: true, // entity를 보고 테이블을 구성하잖아? entitiy 변경되면 자동 마이그레인션 하는 옵션 ㄷㄷ
         // 개발환경에서만 true로 하고 실제 환경에서는 false로 하기
       }),
       inject: [ConfigService],
     }),
-    // TypeOrmModule.forRoot({
-
-    // }),
     MoviesModule,
     DirectorModule,
     GenreModule,
+    UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
