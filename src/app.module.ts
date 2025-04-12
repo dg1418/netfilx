@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { MoviesModule } from './movies/movies.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,6 +18,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/entity/user.entity';
 import { envVariableKeys } from './common/const/env.const';
+import { BearerTokenMiddelware } from './auth/middleware/bearer-token.middleware';
 
 @Module({
   imports: [
@@ -53,4 +59,20 @@ import { envVariableKeys } from './common/const/env.const';
     AuthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(BearerTokenMiddelware)
+      .exclude(
+        {
+          path: 'auth/login',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/register',
+          method: RequestMethod.POST,
+        },
+      )
+      .forRoutes('*');
+  }
+}
