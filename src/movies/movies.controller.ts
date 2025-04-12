@@ -11,11 +11,13 @@ import {
   ClassSerializerInterceptor,
   ParseIntPipe,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -37,6 +39,7 @@ export class MoviesController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   postMovie(@Body() body: CreateMovieDto) {
     return this.moviesService.createMovie(body);
   }
