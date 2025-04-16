@@ -18,6 +18,7 @@ import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Public } from 'src/auth/decorator/public.decorator';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -25,11 +26,13 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
+  @Public()
   @Get()
   getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
     return this.moviesService.findManyMovies(title);
   }
 
+  @Public()
   @Get(':id')
   getMovie(
     @Param('id', ParseIntPipe)
