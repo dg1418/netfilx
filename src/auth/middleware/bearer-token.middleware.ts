@@ -52,6 +52,12 @@ export class BearerTokenMiddelware implements NestMiddleware {
 
       // 현재 모든 에러가 생기면 일단 next()로 보내는 코드가 되었는데, 왜 이렇게 했을까 생각해봤는데
       // 강의 주제랑 멀아지니까 대충 한듯
+
+      // 15강에서 에러 처리 해줬음
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Access 토큰이 만료 되었습니다.');
+      }
+
       next();
     }
   }
