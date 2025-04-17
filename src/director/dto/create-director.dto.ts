@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateDirectorDto {
   @IsNotEmpty()
@@ -6,7 +6,7 @@ export class CreateDirectorDto {
   name: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsDate()
   dob: Date;
 
   @IsNotEmpty()
