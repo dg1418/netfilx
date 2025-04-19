@@ -21,17 +21,17 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/user/entity/user.entity';
+import { GetMovieDto } from './dtos/get-movies.dto';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
-// @Exclude() 적용(class-transform적용하겠다.)할려면 이 인터셉터를 걸어줘야한다.
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
   @Public()
-  getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
-    return this.moviesService.findManyMovies(title);
+  getMovies(@Query() query: GetMovieDto) {
+    return this.moviesService.findManyMovies(query);
   }
 
   @Get(':id')

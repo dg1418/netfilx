@@ -11,8 +11,7 @@ async function bootstrap() {
       whitelist: true, // 정의하지 않은 속성이 들어오면 dto에서 그 속성 키 없앰, 기본은 false,
       forbidNonWhitelisted: true, // 정의하지 않은 속성이 들어오면 에러도 던짐 ,기본은 false
       transformOptions: {
-        // 이부분이 언제 추가되었는지 모르겠음. 깃허브 코드 추가한거라. 나중에 확인
-        enableImplicitConversion: true,
+        enableImplicitConversion: true, // 페이지네이션에서 추가된 코드, 쿼리에서 넘버릭 스트링을 변환해줌
       },
     }),
   );
