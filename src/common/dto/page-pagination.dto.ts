@@ -4,10 +4,10 @@ export class PagePaginationDto {
   @IsInt()
   @IsPositive()
   @IsOptional()
-  page?: number = 1;
+  readonly page?: number = 1;
 
   @IsInt()
   @IsPositive()
   @IsOptional()
-  take?: number = 5;
+  readonly take?: number = 5;
 }
