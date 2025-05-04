@@ -1,17 +1,27 @@
-import { IsIn, IsInt, IsOptional, IsPositive } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CursorPaginationDto {
   @IsOptional()
-  @IsInt()
-  @IsPositive()
-  readonly id?: number;
+  //@IsInt()
+  //@IsPositive()
+  readonly cursor?: string;
 
   @IsOptional()
   @IsInt()
   @IsPositive()
   readonly take?: number = 5;
 
-  @IsOptional()
-  @IsIn(['ASC', 'DESC'])
-  readonly order?: 'ASC' | 'DESC' = 'DESC';
+  //@IsOptional()
+  @IsString({
+    each: true,
+  })
+  @IsArray()
+  readonly orders?: string[] = [];
 }

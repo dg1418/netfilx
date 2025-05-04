@@ -22,13 +22,24 @@ export class CommonService {
     qb: SelectQueryBuilder<T>,
     dto: CursorPaginationDto,
   ) {
-    const { id, take, order } = dto;
+    const { cursor, take, orders } = dto;
 
-    if (id) {
-      qb.where(`${qb.alias}.id ${order === 'ASC' ? '>' : '<'} :id`, { id });
+    if (cursor) {
+      //qb.where(`${qb.alias}.id ${order === 'ASC' ? '>' : '<'} :id`, { id });
     }
 
-    qb.orderBy(`${qb.alias}.id`, order);
+    orders.reduce((isFirstOrderBy, order) => {
+      const [column, direction] = order.split('_');
+
+      if (isFirstOrderBy) {
+        qb.orderBy(`${qb.alias}.${column}`, direction as 'ASC' | 'DESC');
+      } else {
+        qb.addOrderBy(`${qb.alias}.${column}`, direction as 'ASC' | 'DESC');
+      }
+
+      return false;
+    }, true);
+
     qb.take(take);
   }
 }
