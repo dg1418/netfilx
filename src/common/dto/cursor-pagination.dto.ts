@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsIn,
   IsInt,
   IsOptional,
   IsPositive,
@@ -9,8 +8,7 @@ import {
 
 export class CursorPaginationDto {
   @IsOptional()
-  //@IsInt()
-  //@IsPositive()
+  @IsString()
   readonly cursor?: string;
 
   @IsOptional()
@@ -18,10 +16,10 @@ export class CursorPaginationDto {
   @IsPositive()
   readonly take?: number = 5;
 
-  //@IsOptional()
+  @IsOptional()
   @IsString({
     each: true,
   })
   @IsArray()
-  readonly orders?: string[] = [];
+  readonly orders?: string[] = ['id_DESC'];
 }
