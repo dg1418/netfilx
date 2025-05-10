@@ -15,7 +15,8 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
 
     const status = exception.getStatus();
 
-    console.log(`[UnathorizedException] ${request.method} ${request.path}`);
+    console.log(`[UnauthorizedException] ${request.method} ${request.path}`);
+
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
