@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -17,10 +18,11 @@ export class CreateMovieDto {
   @IsString()
   detail: string;
 
-  @IsArray() //배열임
-  @ArrayNotEmpty() //비어있자 않은 배열이다.
+  @IsArray()
+  @ArrayNotEmpty()
   @IsInt({ each: true })
   @IsPositive({ each: true })
+  @Type(() => Number)
   genreIds: number[];
 
   @IsNotEmpty()
