@@ -26,7 +26,11 @@ import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from 'src/user/entity/user.entity';
 import { GetMovieDto } from './dtos/get-movies.dto';
 import { TransectionInterceptor } from 'src/common/interceptor/transection.interceptor';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -51,11 +55,26 @@ export class MoviesController {
   @Post()
   @RBAC(Role.admin)
   @UseInterceptors(TransectionInterceptor)
-  @UseInterceptors(FilesInterceptor('movies'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      {
+        name: 'movie',
+        maxCount: 1,
+      },
+      {
+        name: 'poster',
+        maxCount: 2,
+      },
+    ]),
+  )
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      movie?: Express.Multer.File[];
+      poster?: Express.Multer.File[];
+    },
   ) {
     console.log(files);
     return this.moviesService.createMovie(body, req.queryRunner);
