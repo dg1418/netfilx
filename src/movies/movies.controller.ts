@@ -56,16 +56,35 @@ export class MoviesController {
   @RBAC(Role.admin)
   @UseInterceptors(TransectionInterceptor)
   @UseInterceptors(
-    FileFieldsInterceptor([
+    FileFieldsInterceptor(
+      [
+        {
+          name: 'movie',
+          maxCount: 1,
+        },
+        {
+          name: 'poster',
+          maxCount: 2,
+        },
+      ],
       {
-        name: 'movie',
-        maxCount: 1,
+        limits: {
+          fileSize: 200000000, // 200mb
+        },
+        fileFilter(req, file, callback) {
+          const canUploadFile = true;
+
+          if (file.mimetype !== 'video/mp4') {
+            return callback(
+              new BadRequestException('.mp4 타입의 파일만 가능합니다.'),
+              !canUploadFile,
+            );
+          }
+
+          return callback(null, canUploadFile);
+        },
       },
-      {
-        name: 'poster',
-        maxCount: 2,
-      },
-    ]),
+    ),
   )
   postMovie(
     @Body() body: CreateMovieDto,
@@ -76,6 +95,7 @@ export class MoviesController {
       poster?: Express.Multer.File[];
     },
   ) {
+    console.log('--------------------------');
     console.log(files);
     return this.moviesService.createMovie(body, req.queryRunner);
   }
