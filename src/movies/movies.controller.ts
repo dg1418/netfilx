@@ -31,6 +31,7 @@ import {
   FileInterceptor,
   FilesInterceptor,
 } from '@nestjs/platform-express';
+import { MovieFilePipe } from './pipe/movie-file.pipe';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -56,47 +57,37 @@ export class MoviesController {
   @RBAC(Role.admin)
   @UseInterceptors(TransectionInterceptor)
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        {
-          name: 'movie',
-          maxCount: 1,
-        },
-        {
-          name: 'poster',
-          maxCount: 2,
-        },
-      ],
-      {
-        limits: {
-          fileSize: 200000000, // 200mb
-        },
-        fileFilter(req, file, callback) {
-          const canUploadFile = true;
-
-          if (file.mimetype !== 'video/mp4') {
-            return callback(
-              new BadRequestException('.mp4 타입의 파일만 가능합니다.'),
-              !canUploadFile,
-            );
-          }
-
-          return callback(null, canUploadFile);
-        },
+    FileInterceptor('movie', {
+      limits: {
+        fileSize: 200000000, // 200mb
       },
-    ),
+      fileFilter(req, file, callback) {
+        const canUploadFile = true;
+
+        if (file.mimetype !== 'video/mp4') {
+          return callback(
+            new BadRequestException('.mp4 타입의 파일만 가능합니다.'),
+            !canUploadFile,
+          );
+        }
+
+        return callback(null, canUploadFile);
+      },
+    }),
   )
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFiles()
-    files: {
-      movie?: Express.Multer.File[];
-      poster?: Express.Multer.File[];
-    },
+    @UploadedFile(
+      new MovieFilePipe({
+        maxSizeInMB: 200,
+        mimetype: 'video/mp4',
+      }),
+    )
+    movieFile: Express.Multer.File,
   ) {
     console.log('--------------------------');
-    console.log(files);
+    console.log(movieFile);
     return this.moviesService.createMovie(body, req.queryRunner);
   }
 
