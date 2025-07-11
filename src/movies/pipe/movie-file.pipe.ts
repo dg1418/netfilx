@@ -25,7 +25,7 @@ export class MovieFilePipe
 
   private assertFileExists(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('movie 필드는 필수 입니다.');
+      throw new BadRequestException('video 필드는 필수 입니다.');
     }
   }
 

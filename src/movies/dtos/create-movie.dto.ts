@@ -29,4 +29,8 @@ export class CreateMovieDto {
   @IsInt()
   @IsPositive()
   directorId: number;
+
+  @IsNotEmpty()
+  @IsString()
+  movieFileName: string;
 }
