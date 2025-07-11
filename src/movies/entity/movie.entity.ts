@@ -28,6 +28,9 @@ export class Movie extends BaseTable {
   })
   likeCount: number;
 
+  @Column()
+  movieFilePath: string;
+
   @ManyToMany(() => Genre, (genre) => genre.movies)
   @JoinTable()
   genres: Genre[];
