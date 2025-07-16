@@ -57,6 +57,7 @@ export class MoviesService {
       .leftJoinAndSelect('movie.director', 'director')
       .leftJoinAndSelect('movie.genres', 'genres')
       .leftJoinAndSelect('movie.detail', 'detail')
+      .leftJoinAndSelect('movie.creator', 'creator')
       .where('movie.id = :id', { id })
       .getOne();
 
@@ -93,7 +94,11 @@ export class MoviesService {
     return genres;
   }
 
-  async createMovie(createMovieDto: CreateMovieDto, qr: QueryRunner) {
+  async createMovie(
+    createMovieDto: CreateMovieDto,
+    userId: number,
+    qr: QueryRunner,
+  ) {
     const { directorId, genreIds } = createMovieDto;
 
     const director = await qr.manager.findOne(Director, {
@@ -137,6 +142,9 @@ export class MoviesService {
           id: movieDetailId,
         },
         director,
+        creator: {
+          id: userId,
+        },
         movieFilePath: join(movieFilePath, createMovieDto.movieFileName),
       })
       .execute();
