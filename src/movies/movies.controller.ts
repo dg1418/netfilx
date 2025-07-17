@@ -34,6 +34,11 @@ export class MoviesController {
     return this.moviesService.findManyMovies(query);
   }
 
+  @Get('recent')
+  getRecentMovies() {
+    return this.moviesService.findRecent();
+  }
+
   @Get(':id')
   @Public()
   getMovie(

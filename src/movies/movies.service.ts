@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dtos/create-movie.dto';
 import { UpdateMovieDto } from './dtos/update-movie.dto';
 import { Movie } from './entity/movie.entity';
@@ -11,6 +11,7 @@ import { GetMovieDto } from './dtos/get-movies.dto';
 import { CommonService } from 'src/common/common.service';
 import { join } from 'path';
 import { rename } from 'fs/promises';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class MoviesService {
@@ -25,6 +26,8 @@ export class MoviesService {
     private readonly genreRepository: Repository<Genre>,
     private readonly dataSource: DataSource, // tpyeorm의 트랜잭셕을 위한 객체
     private readonly commonService: CommonService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   async findManyMovies(query: GetMovieDto) {
@@ -92,6 +95,23 @@ export class MoviesService {
     }
 
     return genres;
+  }
+
+  async findRecent() {
+    const cacheData = await this.cacheManager.get('MOVIE_RECENT');
+
+    if (cacheData) {
+      return cacheData;
+    }
+
+    const data = await this.movieRepository.find({
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+
+    await this.cacheManager.set('MOVIE_RECENT', data);
+
+    return data;
   }
 
   async createMovie(
