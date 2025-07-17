@@ -22,6 +22,7 @@ import { TransectionInterceptor } from 'src/common/interceptor/transection.inter
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('movies')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -35,6 +36,8 @@ export class MoviesController {
   }
 
   @Get('recent')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(3000)
   getRecentMovies() {
     return this.moviesService.findRecent();
   }
