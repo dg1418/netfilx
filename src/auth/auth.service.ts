@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { envVariableKeys } from 'src/common/const/env.const';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +20,8 @@ export class AuthService {
     private readonly userRepository: Repository<User>, // 사용자를 생성할꺼니까
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
   parseBasicToken(rawToken: string) {
     // 1. 베이직 토큰을 ' ' 기준으로 스플릿 한후 토큰만 추출하기
@@ -103,6 +107,20 @@ export class AuthService {
       // 아주 개인적인 추가 생각으로는 토큰 만료도 있지만, 토큰 변조도 잡을 수 있는데 퉁친게 아쉬운거 같음
       throw new UnauthorizedException('Access 토큰이 만료 되었습니다.');
     }
+  }
+
+  async blockToken(token: string) {
+    const tokenKey = `BLOCKED_TOKEN_${token}`;
+    const payload = await this.jwtService.decode(token);
+    const expiryMs = payload['exp'] * 1000;
+    const nowMs = Date.now();
+    const cacheTTL = expiryMs - nowMs;
+
+    if (cacheTTL > 0) {
+      await this.cacheManager.set(tokenKey, payload, cacheTTL);
+    }
+
+    return true;
   }
 
   async register(rawToken: string) {
