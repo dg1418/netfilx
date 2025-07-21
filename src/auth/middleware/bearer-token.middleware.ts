@@ -1,5 +1,7 @@
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NestMiddleware,
   UnauthorizedException,
@@ -14,7 +16,10 @@ export class BearerTokenMiddelware implements NestMiddleware {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
+
   async use(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -22,17 +27,22 @@ export class BearerTokenMiddelware implements NestMiddleware {
       return;
     }
 
+    const token = this.validateBearerToken(authHeader);
+    const tokenKey = `TOKEN_${token}`;
+    const cachedPayload = await this.cacheManager.get(tokenKey);
+
+    if (cachedPayload) {
+      req.user = cachedPayload;
+      next();
+      return;
+    }
+
+    const decodedPayload = this.jwtService.decode(token);
+    if (decodedPayload.type !== 'refresh' && decodedPayload.type !== 'access') {
+      throw new UnauthorizedException('잘못된 토큰 입니다!');
+    }
+
     try {
-      const token = this.validateBearerToken(authHeader);
-
-      const decodedPayload = this.jwtService.decode(token);
-      if (
-        decodedPayload.type !== 'refresh' &&
-        decodedPayload.type !== 'access'
-      ) {
-        throw new UnauthorizedException('잘못된 토큰 입니다!');
-      }
-
       const secretKey =
         decodedPayload.type === 'refresh'
           ? envVariableKeys.refreshTokenSecret
@@ -41,6 +51,18 @@ export class BearerTokenMiddelware implements NestMiddleware {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>(secretKey),
       });
+
+      // 캐싱하기
+      const expiryMs = payload['exp'] * 1000;
+      const nowMs = Date.now();
+      const diffMs = expiryMs - nowMs;
+
+      const cacheSafetyMarginMs = 30000; // 캐시 만료 시간을 토큰만료보다 안전하게 30초 일찍 없애줌
+      const cacheTTL = diffMs - cacheSafetyMarginMs;
+
+      if (cacheTTL > 0) {
+        await this.cacheManager.set(tokenKey, payload, cacheTTL);
+      }
 
       req.user = payload;
       next();
