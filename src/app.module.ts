@@ -28,6 +28,7 @@ import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter'
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottleInterceptor } from './common/interceptor/throttle.Interceptor';
 
 @Module({
   imports: [
@@ -90,11 +91,11 @@ import { CacheModule } from '@nestjs/cache-manager';
     },
     {
       provide: APP_FILTER,
-      useClass: ForbiddenExceptionFilter,
+      useClass: QueryFailedExceptionFilter,
     },
     {
-      provide: APP_FILTER,
-      useClass: QueryFailedExceptionFilter,
+      provide: APP_INTERCEPTOR,
+      useClass: ThrottleInterceptor,
     },
   ],
 })
