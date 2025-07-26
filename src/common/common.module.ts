@@ -4,6 +4,7 @@ import { CommonController } from './common.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
+import { TasksService } from './tasks.service';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { join } from 'path';
     }),
   ],
   controllers: [CommonController],
-  providers: [CommonService],
+  providers: [CommonService, TasksService],
   exports: [CommonService],
 })
 export class CommonModule {}

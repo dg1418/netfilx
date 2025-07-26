@@ -22,7 +22,7 @@ import { TransectionInterceptor } from 'src/common/interceptor/transection.inter
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { Throttle } from 'src/common/decorator/Throttle.decorator';
 
 @Controller('movies')
