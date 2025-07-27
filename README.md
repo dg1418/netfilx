@@ -1,7 +1,4 @@
-다음은 네가 제공한 NestJS README 파일의 전체 한국어 번역본이야. 그대로 복사해서 사용하면 돼.
 
-
----
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest 로고" /></a>
