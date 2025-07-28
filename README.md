@@ -21,31 +21,37 @@
 Nest 프레임워크를 위한 TypeScript 스타터 저장소입니다.
 
 프로젝트 설정
-
+```shell
 $ pnpm install
-
+```
 프로젝트 빌드 및 실행
 
 # 개발 환경 실행
+```shell
 $ pnpm run start
-
+```
 # 변경 감지 모드 실행
+```shell
 $ pnpm run start:dev
-
+```
 # 운영 환경 실행
+```shell
 $ pnpm run start:prod
-
+```
 테스트 실행
 
 # 단위 테스트
+```shell
 $ pnpm run test
-
+```
 # E2E(엔드투엔드) 테스트
+```shell
 $ pnpm run test:e2e
-
+```
 # 테스트 커버리지 확인
+```shell
 $ pnpm run test:cov
-
+```
 참고 자료
 
 NestJS 작업 시 유용할 수 있는 몇 가지 자료를 소개합니다:
@@ -81,9 +87,3 @@ Nest는 MIT 라이선스의 오픈 소스 프로젝트이며, 후원자와 기�
 라이선스
 
 Nest는 MIT 라이선스를 따릅니다.
-
-
----
-
-다른 README도 원하면 언제든지 줘.
-
