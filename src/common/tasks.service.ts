@@ -1,12 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { readdir, unlink } from 'fs/promises';
+import { join, parse } from 'path';
 
 @Injectable()
 export class TasksService {
   constructor() {}
 
-  @Cron('* * * * * *')
   logEverySecond() {
     console.log('매 초 실행');
+  }
+
+  @Cron('* * * * * *')
+  async eraseOrphanTempFiles() {
+    const tempFiles = await readdir(join(process.cwd(), 'public', 'temp'));
+
+    const deletedFiles = tempFiles.filter((file) => {
+      const filename = parse(file).name;
+
+      // filename예시: 15f7b996-74c1-4757-bf9e-00352109c059_1753520645048
+      const split = filename.split('_');
+      if (split.length !== 2) {
+        return true;
+      }
+
+      try {
+        const now = Date.now();
+        const fileTimestamp = +new Date(Number(split[split.length - 1]));
+        const aDayInMs = 24 * 60 * 60 * 1000;
+
+        return now - fileTimestamp > aDayInMs;
+      } catch (e) {
+        return true;
+      }
+    });
+
+    await Promise.all(
+      deletedFiles.map((file) => {
+        unlink(join(process.cwd(), 'public', 'temp', file));
+      }),
+    );
   }
 }
