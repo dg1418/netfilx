@@ -1,17 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { readdir, unlink } from 'fs/promises';
 import { join, parse } from 'path';
+import { DefaultLogger } from './logger/default.logger';
 
 @Injectable()
 export class TasksService {
-  constructor() {}
+  // private readonly logger = new Logger(TasksService.name);
+  constructor(private readonly logger: DefaultLogger) {}
 
+  // @Cron('*/5 * * * * *')
   logEverySecond() {
-    console.log('매 초 실행');
+    this.logger.fatal('fatal: 이것은 치명적인 에러 메시지입니다.');
+    this.logger.error('error: 이것은 에러 메시지입니다.');
+    this.logger.warn('warn: 이것은 경고 메시지입니다.');
+    this.logger.log('log: 일반적인 로그 메시지입니다.');
+    this.logger.debug('debug: 이것은 디버그 메시지입니다.');
+    this.logger.verbose('verbose: 이것은 자세한 로그 메시지입니다.');
   }
 
-  @Cron('* * * * * *')
+  //@Cron('* * * * * *')
   async eraseOrphanTempFiles() {
     const tempFiles = await readdir(join(process.cwd(), 'public', 'temp'));
 
