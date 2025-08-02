@@ -1,5 +1,3 @@
-
-
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest 로고" /></a>
 </p><p align="center">
@@ -16,43 +14,59 @@
   <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="PayPal로 후원하기" /></a>
   <a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Open Collective로 후원하기" /></a>
   <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="트위터 팔로우" /></a>
-</p>소개
+</p>
+
+# 소개
 
 Nest 프레임워크를 위한 TypeScript 스타터 저장소입니다.
 
-프로젝트 설정
+# 프로젝트 설정
+
 ```shell
 $ pnpm install
 ```
-프로젝트 빌드 및 실행
 
-# 개발 환경 실행
+# 프로젝트 빌드 및 실행
+
+## 개발 환경 실행
+
 ```shell
 $ pnpm run start
 ```
-# 변경 감지 모드 실행
+
+## 변경 감지 모드 실행
+
 ```shell
 $ pnpm run start:dev
 ```
-# 운영 환경 실행
+
+## 운영 환경 실행
+
 ```shell
 $ pnpm run start:prod
 ```
-테스트 실행
 
-# 단위 테스트
+# 테스트 실행
+
+## 단위 테스트
+
 ```shell
 $ pnpm run test
 ```
-# E2E(엔드투엔드) 테스트
+
+## E2E(엔드투엔드) 테스트
+
 ```shell
 $ pnpm run test:e2e
 ```
-# 테스트 커버리지 확인
+
+## 테스트 커버리지 확인
+
 ```shell
 $ pnpm run test:cov
 ```
-참고 자료
+
+# 참고 자료
 
 NestJS 작업 시 유용할 수 있는 몇 가지 자료를 소개합니다:
 
@@ -70,12 +84,11 @@ NestJS Devtools를 통해 애플리케이션 그래프를 시각화하고 실시
 
 구직 중이거나 채용 중이라면 NestJS의 공식 채용 게시판을 확인해보세요.
 
-
-후원
+# 후원
 
 Nest는 MIT 라이선스의 오픈 소스 프로젝트이며, 후원자와 기여자들의 지원으로 성장할 수 있습니다. 함께하고 싶다면 여기를 참고하세요.
 
-연락하기
+# 연락하기
 
 작성자: Kamil Myśliwiec
 
@@ -83,7 +96,6 @@ Nest는 MIT 라이선스의 오픈 소스 프로젝트이며, 후원자와 기�
 
 트위터: @nestframework
 
-
-라이선스
+# 라이선스
 
 Nest는 MIT 라이선스를 따릅니다.
