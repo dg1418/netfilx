@@ -11,6 +11,7 @@ import {
   ClassSerializerInterceptor,
   ParseIntPipe,
   Version,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dtos/create-movie.dto';
@@ -28,7 +29,7 @@ import { Throttle } from 'src/common/decorator/Throttle.decorator';
 
 @Controller({
   path: 'movies',
-  version: '1',
+  version: VERSION_NEUTRAL,
 })
 @UseInterceptors(ClassSerializerInterceptor)
 export class MoviesController {
