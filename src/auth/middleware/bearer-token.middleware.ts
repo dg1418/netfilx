@@ -3,12 +3,14 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  LoggerService,
   NestMiddleware,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { envVariableKeys } from 'src/common/const/env.const';
 
 @Injectable()
@@ -18,6 +20,8 @@ export class BearerTokenMiddelware implements NestMiddleware {
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
@@ -99,6 +103,13 @@ export class BearerTokenMiddelware implements NestMiddleware {
     const [bearer, token] = bearerSplit;
 
     if (bearer.toLowerCase() !== 'bearer') {
+      if (bearer.toLowerCase() === 'basic') {
+        this.logger.error(
+          'Basic 인증이 들어왔습니다',
+          null,
+          BearerTokenMiddelware.name,
+        );
+      }
       throw new BadRequestException('토큰 포멧이 잘못되었습니다.');
     }
 
