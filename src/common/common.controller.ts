@@ -6,9 +6,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MovieFilePipe } from 'src/movies/pipe/movie-file.pipe';
 
 @Controller('common')
+@ApiBearerAuth()
 export class CommonController {
   @Post('video')
   @UseInterceptors(

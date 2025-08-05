@@ -21,3 +21,5 @@ export const envVariableKeys = {
   accessTokenSecret,
   refreshTokenSecret,
 };
+
+export const VERSION = 1;

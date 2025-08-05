@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   Version,
   VERSION_NEUTRAL,
+  Res,
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dtos/create-movie.dto';
@@ -26,19 +27,25 @@ import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { Throttle } from 'src/common/decorator/Throttle.decorator';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller({
   path: 'movies',
   version: VERSION_NEUTRAL,
 })
+@ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
+  @ApiOperation({
+    description:
+      '페이지네이션을 지원하는 영화 목록 조회 API. throttle 적용. 1분에 3회 호출 가능.',
+  })
   @Throttle({ count: 3, unit: 'minute' })
   @Public()
-  @Version('2')
+  @Version('1')
   getMovies(@Query() query: GetMovieDto) {
     return this.moviesService.findManyMovies(query);
   }

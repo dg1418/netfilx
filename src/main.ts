@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { VERSION } from './common/const/env.const';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,7 +18,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('NETFLIX')
     .setDescription('코드팩토리 NestJS 강의 공부하기')
-    .setVersion('1.0')
+    .setVersion(`Version ${VERSION}`)
     .addGlobalParameters({
       name: 'version',
       in: 'header',
@@ -25,13 +26,19 @@ async function bootstrap() {
       required: true,
       schema: {
         type: 'string',
-        default: '2',
+        default: `${VERSION}`,
       },
     })
+    .addBasicAuth()
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc', app, document);
+  SwaggerModule.setup('doc', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // 6강, vaildation을 하기 위해서는 기본적으로 글로벌 파이프에 vaildattion pipe 를 넣어야한다.
