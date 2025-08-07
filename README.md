@@ -18,13 +18,7 @@
 
 # 소개
 
-Nest 프레임워크를 위한 TypeScript 스타터 저장소입니다.
-
-# 프로젝트 설정
-
-```shell
-$ pnpm install
-```
+Nest 프레임워크를 중점으로 백엔드 개발을 연습하는 공부용 repository 입니다.
 
 # 프로젝트 빌드 및 실행
 
