@@ -45,7 +45,23 @@ $ pnpm run start:prod
 ## 단위 테스트
 
 ```shell
-$ pnpm run test
+$ pnpm run test/user
+```
+
+```shell
+$ pnpm run test/movie
+```
+
+```shell
+$ pnpm run test/genre
+```
+
+```shell
+$ pnpm run test/director
+```
+
+```shell
+$ pnpm run test/auth
 ```
 
 ## E2E(엔드투엔드) 테스트
