@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    private readonly userService: UserService,
   ) {}
   parseBasicToken(rawToken: string) {
     // 1. 베이직 토큰을 ' ' 기준으로 스플릿 한후 토큰만 추출하기
@@ -126,28 +128,9 @@ export class AuthService {
   async register(rawToken: string) {
     const { email, password } = this.parseBasicToken(rawToken);
 
-    // 1. 회원가입 하는 이메일이 이미 가입한 이메일은 아닌지 확인
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
-
-    if (user) {
-      throw new BadRequestException('이미 가입한 이메일 입니다.');
-    }
-
-    // 3. 비번 해쉬를 위해 bcrypt 사용
-    const hash = await bcrypt.hash(
-      password,
-      this.configService.get<number>(envVariableKeys.hashRounds),
-    );
-
-    await this.userRepository.save({
+    return this.userService.create({
       email,
-      password: hash, // 바로 비번 넣으면 절대 안됨. 항상 해쉬된 값을 넣기
-    });
-
-    return this.userRepository.findOne({
-      where: { email },
+      password,
     });
   }
 

@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 // 7. mock데이터를 직접만들어줬음. 테스트용 객체이고, 메서드 이름만 똑같이한후 실제 함수는 jest.fn()으로 mock 함수를 넣어줌
 const mockUserRepository = {
@@ -11,6 +12,10 @@ const mockUserRepository = {
   findAndCount: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+};
+
+const mockConfigService = {
+  get: jest.fn(),
 };
 
 // 1. describe()는 그룹핑 하는걸 의미함. class로 한번 묶고, 메서드들로 한번씩 묶을 꺼임
@@ -31,6 +36,10 @@ describe('UserService', () => {
           // 8. getRepositoryToken은 typeorm에서 제공해주는 토큰키임 테스트 할때 쓰면됨, 실제 들어가는 value는 mock객체로 씀
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();
