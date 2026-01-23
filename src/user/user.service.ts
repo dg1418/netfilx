@@ -65,8 +65,28 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
+    const { password } = updateUserDto;
+
     await this.findOne(id);
-    await this.userRepository.update({ id }, updateUserDto);
+
+    let input = {
+      ...updateUserDto,
+    };
+
+    if (password) {
+      const hash = await bcrypt.hash(
+        password,
+        this.configService.get<number>(envVariableKeys.hashRounds),
+      );
+
+      input = {
+        ...input,
+        password: hash,
+      };
+    }
+
+    await this.userRepository.update({ id }, input);
+
     return this.findOne(id);
   }
 

@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Role, User } from './entity/user.entity';
+import { User } from './entity/user.entity';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // 7. mock데이터를 직접만들어줬음. 테스트용 객체이고, 메서드 이름만 똑같이한후 실제 함수는 jest.fn()으로 mock 함수를 넣어줌
 const mockUserRepository = {
@@ -175,7 +176,65 @@ describe('UserService', () => {
     });
   });
 
-  describe('update', () => {});
+  describe('update', () => {
+    it('should update a user email or password by id and updateUserDto', async () => {
+      const id = 12;
+      const dto: UpdateUserDto = {
+        email: 'dg1418@naver.com',
+        password: 'adsfadgdgawefd',
+      };
+      const user = {
+        id,
+        email: 'dg1418@naver.com',
+        password: 'asdfasddgawefasfawe',
+        role: 1,
+      };
+
+      const hashPassword = 'asdfasddgawefasfawe';
+      const hashRounds = 10;
+
+      jest.spyOn(mockConfigService, 'get').mockReturnValue(hashRounds);
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockImplementation((password, hashRounds) => hashPassword);
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValueOnce(user);
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValueOnce(user);
+
+      const result = await userService.update(id, dto);
+
+      expect(result).toEqual({
+        ...user,
+        password: hashPassword,
+      });
+      expect(mockConfigService.get).toHaveBeenCalledWith(expect.anything());
+      expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, hashRounds);
+      expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(1, {
+        where: { id },
+      });
+      expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(2, {
+        where: { id },
+      });
+    });
+
+    it('should throw a NotFoundException if user to update is not found', async () => {
+      jest.spyOn(mockUserRepository, 'findOne').mockResolvedValue(null);
+
+      const updateUserDto: UpdateUserDto = {
+        email: 'test@codefactory.ai',
+        password: '123123',
+      };
+
+      expect(userService.update(999, updateUserDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: 999,
+        },
+      });
+      expect(mockUserRepository.update).not.toHaveBeenCalled();
+    });
+  });
 
   describe('remove', () => {
     it('should delete a user by id', async () => {
